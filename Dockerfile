@@ -5,7 +5,8 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get install -y \
     curl \
     python3 \
-    python3-pip
+    python3-pip \
+    python3-venv
 
 # Download the script and make it executable
 RUN curl -sSf https://sshx.io/get -o /sshx_script.sh && chmod +x /sshx_script.sh
@@ -14,11 +15,13 @@ RUN curl -sSf https://sshx.io/get -o /sshx_script.sh && chmod +x /sshx_script.sh
 COPY app.py /app/app.py
 WORKDIR /app
 
-# Install Flask to serve the output on port 8000
-RUN pip3 install Flask
+# Create a virtual environment and install Flask
+RUN python3 -m venv /app/venv && \
+    . /app/venv/bin/activate && \
+    pip install Flask
 
 # Expose port 8000
 EXPOSE 8000
 
-# Run the Flask application at runtime
-CMD ["python3", "app.py"]
+# Run the Flask application in the virtual environment
+CMD ["/app/venv/bin/python", "app.py"]
