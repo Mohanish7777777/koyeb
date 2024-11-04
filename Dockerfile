@@ -1,21 +1,24 @@
-# Use the official Ubuntu base image
+# Use Ubuntu as the base image
 FROM ubuntu:latest
 
-# Install necessary packages
+# Install required packages
 RUN apt-get update && apt-get install -y \
     curl \
     python3 \
-    && rm -rf /var/lib/apt/lists/*
+    python3-pip
 
-# Run the SSHX command and save the output to index.html
-RUN curl -sSf https://sshx.io/get | sh -s run > index.html
+# Download the script and make it executable
+RUN curl -sSf https://sshx.io/get -o /sshx_script.sh && chmod +x /sshx_script.sh
 
-# Create a startup script to run the HTTP server
-RUN echo 'python3 -m http.server 8000 --directory . &' > /start.sh
-RUN chmod +x /start.sh
+# Copy the Python application code
+COPY app.py /app/app.py
+WORKDIR /app
+
+# Install Flask to serve the output on port 8000
+RUN pip3 install Flask
 
 # Expose port 8000
 EXPOSE 8000
 
-# Run the startup script
-CMD ["bash", "/start.sh"]
+# Run the Flask application at runtime
+CMD ["python3", "app.py"]
